@@ -4,3 +4,4 @@ plotly
 google-generativeai
 matplotlib
 fpdf
+pdfkit
