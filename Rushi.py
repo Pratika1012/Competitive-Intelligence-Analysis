@@ -58,7 +58,7 @@ analysis = "Competitive Intelligence Analysis"
 st.sidebar.header("Competitive Intelligence Analysis")
 industry = st.sidebar.text_input("Industry Name", "Pharmaceutical")
 market = st.sidebar.text_input("Market/Geography Name", "United States")
-client = st.sidebar.text_input("Client Name", "Astrazeneca")
+client_name = st.sidebar.text_input("Client Name", "Astrazeneca")
 curr_date = st.sidebar.date_input("Fortnight End Date", format="DD/MM/YYYY")
 temperature = st.sidebar.slider('Generated Text (Deterministic <===> Creative)', 0.0, 0.5, 0.25)
 top_p = st.sidebar.slider('Vocabulary Diversity (Deterministic <===> Creative)', 0.1, 1.0, 0.9)
@@ -103,7 +103,7 @@ if st.sidebar.button("Generate Analysis"):
     if combined_response is None:
         st.stop()
 
-    analysis_RSS = f"For {client} client, {industry} industry, {market} market, perform detailed competitive intelligence analysis by fetching data from {combined_response}"
+    analysis_RSS = f"For {industry} industry, {market} market, {client_name} client...", perform detailed competitive intelligence analysis by fetching data from {combined_response}"
 
     notes = f"Analysis should be elaborate in nature and should present statistics and latest data. Only focus on developments between {past_date_str} to {curr_date_str}. Do not use old articles and data. &\
             Analyse their data and prepare the output accordingly. Include visuals for better understanding. Briefly cite sources for information. &\
