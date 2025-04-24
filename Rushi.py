@@ -9,7 +9,7 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 
 # Configure Groq API
-groq_api_key = st.secrets.get("GROQ_API_KEY", "your-groq-api-key-here")  # Replace with your Groq API key
+groq_api_key = st.secrets.get("GROQ_API_KEY", "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")  # Replace with your Groq API key
 client = Groq(api_key=groq_api_key)
 
 # Define generation configuration
