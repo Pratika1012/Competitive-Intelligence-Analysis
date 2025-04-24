@@ -10,7 +10,14 @@ st.set_page_config(layout="wide")
 
 # Configure Groq API
 groq_api_key = st.secrets.get("GROQ_API_KEY", "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")  # Replace with your Groq API key
-client = Groq(api_key=groq_api_key)
+try:
+    client = Groq(api_key=groq_api_key)
+    if not hasattr(client, 'chat') or not hasattr(getattr(client, 'chat'), 'completions'):
+        st.error("Groq client initialization failed: Invalid API key or unsupported method.")
+        st.stop()
+except Exception as e:
+    st.error(f"Failed to initialize Groq client: {str(e)}")
+    st.stop()
 
 # Define generation configuration
 generation_config = {
@@ -22,7 +29,6 @@ generation_config = {
 def generate_content(prompt, config):
     """Helper function to generate content using Groq API."""
     try:
-        # Use the correct chat completions endpoint
         response = client.chat.completions.create(
             model="llama-3.1-70b-versatile",  # Ensure this model is available
             messages=[{"role": "user", "content": prompt}],  # Chat format with a single user message
