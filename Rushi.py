@@ -9,41 +9,39 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 
 # Configure Groq API
-groq_api_key = st.secrets.get("GROQ_API_KEY", "your-groq-api-key-here")  # Replace with your Groq API key or use Streamlit secrets
+groq_api_key = st.secrets.get("GROQ_API_KEY", "your-groq-api-key-here")  # Replace with your Groq API key
 client = Groq(api_key=groq_api_key)
 
 # Define generation configuration
 generation_config = {
-    "temperature": 0.0,  # Default temperature
-    "max_tokens": 4096,  # Maximum tokens for output
-    "top_p": 1.0,  # Default top_p
+    "temperature": 0.0,
+    "max_tokens": 4096,
+    "top_p": 1.0,
 }
 
 def generate_content(prompt, config):
     """Helper function to generate content using Groq API."""
-    response = client.chat.completions.create(
-        model="llama-3.1-70b-versatile",  # Use a Groq model (check available models in Groq documentation)
-        messages=[{"role": "user", "content": prompt}],
-        temperature=config["temperature"],
-        max_tokens=config["max_tokens"],
-        top_p=config["top_p"]
-    )
-    return response.choices[0].message.content
+    try:
+        # Use the correct Groq API method
+        response = client.completions.create(
+            model="llama-3.1-70b-versatile",  # Ensure this model is available
+            prompt=prompt,  # Use 'prompt' instead of 'messages' for completions endpoint
+            temperature=config["temperature"],
+            max_tokens=config["max_tokens"],
+            top_p=config["top_p"]
+        )
+        return response.choices[0].text  # Extract the generated text
+    except Exception as e:
+        st.error(f"Error generating content: {str(e)}")
+        return None
 
 def generate_pdf(response_text):
-    # Create a PDF document
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-
-    # Add the response_text to the PDF document
     pdf.multi_cell(0, 10, response_text)
-
-    # Save the PDF document to a BytesIO object
     pdf_buffer = pdf.output(dest='S').encode('latin1')
     b64_pdf = base64.b64encode(pdf_buffer).decode()
-
-    # Provide a download link for the generated PDF
     href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="Generated_Analysis.pdf">Download PDF</a>'
     st.markdown(href, unsafe_allow_html=True)
 
@@ -57,10 +55,8 @@ market = st.sidebar.text_input("Market/Geography Name", "United States")
 client = st.sidebar.text_input("Client Name", "Astrazeneca")
 curr_date = st.sidebar.date_input("Fortnight End Date", format="DD/MM/YYYY")
 temperature = st.sidebar.slider('Generated Text (Deterministic <===> Creative)', 0.0, 0.5, 0.25)
-# Note: Groq API does not directly support top_k; omitting or mapping to top_p if needed
 top_p = st.sidebar.slider('Vocabulary Diversity (Deterministic <===> Creative)', 0.1, 1.0, 0.9)
 
-# Update generation config with user inputs
 generation_config2 = {
     "temperature": temperature,
     "max_tokens": 4096,
@@ -74,26 +70,32 @@ if st.sidebar.button("Generate Analysis"):
     curr_date_str = curr_date.strftime(desired_format)
     past_date_str = past_date.strftime(desired_format)
 
-    # Streamlit UI
     st.markdown(f"<h2 style='text-align: center;'>Fortnightly Newsletter</h2>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='text-align: center;'>Competitive Intelligence Analysis for {client}</h3>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='text-align: center;'>{industry} industry in {market}</h3>", unsafe_allow_html=True)
 
-    # Generate content using Groq API
     competitor_list = f"For {industry} industry, {market} market, {client} client, give a list of competitors."
     response_comp = generate_content(competitor_list, generation_config)
+    if response_comp is None:
+        st.stop()
 
     RSS_feed1 = f"For {industry} industry, {market} market, compile a list of relevant RSS feed URLs."
     RSS_feed2 = f"For {industry} industry, {market} market, {client} client and {response_comp} competitors, compile a list of relevant RSS feed URLs."
 
     prompt1 = f"{analysis}\n{objective}\n{RSS_feed1}"
     response1 = generate_content(prompt1, generation_config)
+    if response1 is None:
+        st.stop()
 
     prompt2 = f"{analysis}\n{objective}\n{RSS_feed2}"
     response2 = generate_content(prompt2, generation_config)
+    if response2 is None:
+        st.stop()
 
     combine_prompt = f"Combine two responses.\nResponse 1: {response1}\nResponse 2: {response2}"
     combined_response = generate_content(combine_prompt, generation_config)
+    if combined_response is None:
+        st.stop()
 
     analysis_RSS = f"For {client} client, {industry} industry, {market} market, perform detailed competitive intelligence analysis by fetching data from {combined_response}"
 
@@ -118,6 +120,8 @@ if st.sidebar.button("Generate Analysis"):
 
     final_prompt = f"{objective}\n{analysis}\n{analysis_RSS}\n{notes}\n{notes2}"
     final_response = generate_content(final_prompt, generation_config2)
+    if final_response is None:
+        st.stop()
 
     st.write(final_response)
     response_text = final_response
