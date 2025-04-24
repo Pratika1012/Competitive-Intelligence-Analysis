@@ -12,17 +12,15 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 
 # Configure Google Generative AI
-gemini_api_key = "AIzaSyAGxhWaMKBEnFXfhGeQWWvq92rE5JtkTIw"
-genai.configure(api_key=gemini_api_key)
+groq_api_key = st.secrets.get("GROQ_API_KEY", "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")  # Replace with your Groq API key or use Streamlit secrets
+client = Groq(api_key=groq_api_key)
 
-# Define Generative Models
+# Define generation configuration
 generation_config = {
-  "temperature": 0,
-  "top_p": 1,
-  "top_k": 1,
-  "max_output_tokens": 4096,
+    "temperature": 0.0,  # Default temperature
+    "max_tokens": 4096,  # Maximum tokens for output
+    "top_p": 1.0,  # Default top_p
 }
-
 model = genai.GenerativeModel(model_name="gemini-pro", generation_config=generation_config)
 
 def generate_pdf(response_text):
@@ -76,33 +74,7 @@ if st.sidebar.button("Generate Analysis"):
     st.markdown(f"<h2 style='text-align: center;'>Fortnightly Newsletter</h2>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='text-align: center;'>Competitive Intelligence Analysis for {client}</h3>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='text-align: center;'>{industry} industry in {market}</h3>", unsafe_allow_html=True)
-    # Convert date string to date object
-    # date_format = "%d-%m-%y"
-    # date_object = datetime.strptime(current_date, date_format)
-    # curr_date = date_object.date()
-    
-
-    # Generate content using Generative Models
-    # competitor_list = f"For {industry} industry, {market} market, {client} client, give a list of competitors."
-    # prompt_parts = [competitor_list]
-    # response_comp = model.generate_content(prompt_parts)
-
-    # RSS_feed1 = f"For {industry} industry, {market} market, compile a list of relevant RSS feed URLs."
-    # RSS_feed2 = f"For {industry} industry, {market} market, {client} client and {response_comp.text} competitors, compile a list of relevant RSS feed URLs."
-    
-    # prompt_parts = ["Competitive Intelligence Analysis", "Stay ahead of competitors by monitoring industry trends", RSS_feed1]
-    # response1 = model.generate_content(prompt_parts)
-
-    # prompt_parts = ["Competitive Intelligence Analysis", "Stay ahead of competitors by monitoring industry trends", RSS_feed2]
-    # response2 = model.generate_content(prompt_parts)
-
-    # prompt_parts = ["Combine two responses.", response1.text, response2.text]
-    # final_response = model.generate_content(prompt_parts)
-
-    # st.subheader("Generated Competitive Intelligence Analysis")
-    # st.write(final_response.text)
-
-# st.markdown(footer, unsafe_allow_html=True)
+   
     
     company_info = f"Summarize company information {client}"
 
