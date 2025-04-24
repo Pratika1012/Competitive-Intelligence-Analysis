@@ -22,15 +22,15 @@ generation_config = {
 def generate_content(prompt, config):
     """Helper function to generate content using Groq API."""
     try:
-        # Use the correct Groq API method
-        response = client.completions.create(
+        # Use the correct chat completions endpoint
+        response = client.chat.completions.create(
             model="llama-3.1-70b-versatile",  # Ensure this model is available
-            prompt=prompt,  # Use 'prompt' instead of 'messages' for completions endpoint
+            messages=[{"role": "user", "content": prompt}],  # Chat format with a single user message
             temperature=config["temperature"],
             max_tokens=config["max_tokens"],
             top_p=config["top_p"]
         )
-        return response.choices[0].text  # Extract the generated text
+        return response.choices[0].message.content  # Extract the generated text
     except Exception as e:
         st.error(f"Error generating content: {str(e)}")
         return None
